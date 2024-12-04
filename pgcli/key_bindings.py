@@ -1,4 +1,6 @@
 import logging
+import click
+import re
 from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.filters import (
@@ -8,6 +10,7 @@ from prompt_toolkit.filters import (
     has_selection,
     vi_mode,
 )
+from .man import man
 
 from .pgbuffer import buffer_should_be_handled, safe_multi_line_mode
 
@@ -19,6 +22,20 @@ def pgcli_bindings(pgcli):
     kb = KeyBindings()
 
     tab_insert_text = " " * 4
+
+    @kb.add("f1")
+    def _(event):
+        """Show man page for current command."""
+        _logger.debug("Detected <F1> key.")
+
+        m = re.match(r"^[\w\s]+", event.app.current_buffer.text)
+        if not m:
+            return
+        click.clear()
+        text = m.group()
+        _logger.debug(f"Launching man page for {text}")
+        if not man(text):
+            _logger.debug("Failed to show man page")
 
     @kb.add("f2")
     def _(event):
