@@ -881,3 +881,10 @@ class PGExecute:
 
     def explain_prefix(self):
         return "EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) "
+
+    def set_timezone(self, timezone: str):
+        query = psycopg.sql.SQL("set time zone {}").format(
+            psycopg.sql.Identifier(timezone)
+        )
+        with self.conn.cursor() as cur:
+            cur.execute(query)

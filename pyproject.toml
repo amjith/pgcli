@@ -40,6 +40,7 @@ dependencies = [
     # task manager. Also setproctitle is a hard dependency to install in Windows,
     # so we'll only install it if we're not in Windows.
     "setproctitle >= 1.1.9; sys_platform != 'win32' and 'CYGWIN' not in sys_platform",
+    "tzlocal >= 5.2",
 ]
 dynamic = ["version"]
 

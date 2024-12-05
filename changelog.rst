@@ -5,6 +5,7 @@ Features
 --------
 * Add a `--ping` command line option; allows pgcli to replace `pg_isready`
 * Changed the packaging metadata from setup.py to pyproject.toml
+* The session time zone setting is set to the system time zone by default
 
 Bug fixes:
 ----------

@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfoNotFoundError
 from configobj import ConfigObj, ParseError
 from pgspecial.namedqueries import NamedQueries
 from .config import skip_initial_comment
@@ -23,6 +24,7 @@ from cli_helpers.tabular_output.preprocessors import align_decimals, format_numb
 from cli_helpers.utils import strip_ansi
 from .explain_output_formatter import ExplainOutputFormatter
 import click
+import tzlocal
 
 try:
     import setproctitle
@@ -1623,6 +1625,30 @@ def cli(
         pgcli.connect_service(service, user)
     else:
         pgcli.connect(database, host, user, port)
+
+    local_tz = None
+    try:
+        local_tz = tzlocal.get_localzone_name()
+
+        if local_tz is None:
+            click.secho(
+                "No local time zone configuration found",
+                err=True,
+                fg="yellow",
+            )
+    except ZoneInfoNotFoundError as e:
+        # e.args[0] is the pre-formatted message which includes a list
+        # of conflicting sources
+        click.secho(e.args[0], err=True, fg="yellow")
+
+    if local_tz is not None:
+        pgcli.pgexecute.set_timezone(local_tz)
+    else:
+        click.secho(
+            "Continuing with the default server time zone",
+            err=True,
+            fg="yellow",
+        )
 
     if list_databases:
         cur, headers, status = pgcli.pgexecute.full_databases()
