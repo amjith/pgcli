@@ -76,6 +76,57 @@ def test_format_output():
     assert list(results) == expected
 
 
+def test_column_date_formats():
+    settings = OutputSettings(
+        table_format="psql",
+        column_date_formats={
+            "date_col": "%Y-%m-%d",
+            "datetime_col": "%I:%M:%S %m/%d/%y",
+        },
+    )
+    data = [
+        ("name1", "2024-12-13T18:32:22", "2024-12-13T19:32:22", "2024-12-13T20:32:22"),
+        ("name2", "2025-02-13T02:32:22", "2025-02-13T02:32:22", "2025-02-13T02:32:22"),
+    ]
+    headers = ["name", "date_col", "datetime_col", "unchanged_col"]
+
+    results = format_output("Title", data, headers, "test status", settings)
+    expected = [
+        "Title",
+        "+-------+------------+-------------------+---------------------+",
+        "| name  | date_col   | datetime_col      | unchanged_col       |",
+        "|-------+------------+-------------------+---------------------|",
+        "| name1 | 2024-12-13 | 07:32:22 12/13/24 | 2024-12-13T20:32:22 |",
+        "| name2 | 2025-02-13 | 02:32:22 02/13/25 | 2025-02-13T02:32:22 |",
+        "+-------+------------+-------------------+---------------------+",
+        "test status",
+    ]
+    assert list(results) == expected
+
+
+def test_no_column_date_formats():
+    """Test that not setting any column date formats returns unaltered datetime columns"""
+    settings = OutputSettings(table_format="psql")
+    data = [
+        ("name1", "2024-12-13T18:32:22", "2024-12-13T19:32:22", "2024-12-13T20:32:22"),
+        ("name2", "2025-02-13T02:32:22", "2025-02-13T02:32:22", "2025-02-13T02:32:22"),
+    ]
+    headers = ["name", "date_col", "datetime_col", "unchanged_col"]
+
+    results = format_output("Title", data, headers, "test status", settings)
+    expected = [
+        "Title",
+        "+-------+---------------------+---------------------+---------------------+",
+        "| name  | date_col            | datetime_col        | unchanged_col       |",
+        "|-------+---------------------+---------------------+---------------------|",
+        "| name1 | 2024-12-13T18:32:22 | 2024-12-13T19:32:22 | 2024-12-13T20:32:22 |",
+        "| name2 | 2025-02-13T02:32:22 | 2025-02-13T02:32:22 | 2025-02-13T02:32:22 |",
+        "+-------+---------------------+---------------------+---------------------+",
+        "test status",
+    ]
+    assert list(results) == expected
+
+
 def test_format_output_truncate_on():
     settings = OutputSettings(
         table_format="psql", dcmlfmt="d", floatfmt="g", max_field_width=10
