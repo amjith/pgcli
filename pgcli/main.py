@@ -19,7 +19,11 @@ from time import time, sleep
 from typing import Optional
 
 from cli_helpers.tabular_output import TabularOutputFormatter
-from cli_helpers.tabular_output.preprocessors import align_decimals, format_numbers
+from cli_helpers.tabular_output.preprocessors import (
+    align_decimals,
+    format_numbers,
+    format_timestamps,
+)
 from cli_helpers.utils import strip_ansi
 from .explain_output_formatter import ExplainOutputFormatter
 import click
@@ -111,9 +115,10 @@ MetaQuery.__new__.__defaults__ = ("", False, 0, 0, False, False, False, False)
 
 OutputSettings = namedtuple(
     "OutputSettings",
-    "table_format dcmlfmt floatfmt missingval expanded max_width case_function style_output max_field_width",
+    "table_format dcmlfmt floatfmt column_date_formats missingval expanded max_width case_function style_output max_field_width",
 )
 OutputSettings.__new__.__defaults__ = (
+    None,
     None,
     None,
     None,
@@ -264,6 +269,7 @@ class PGCli:
         self.on_error = c["main"]["on_error"].upper()
         self.decimal_format = c["data_formats"]["decimal"]
         self.float_format = c["data_formats"]["float"]
+        self.column_date_formats = c["column_date_formats"]
         auth.keyring_initialize(c["main"].as_bool("keyring"), logger=self.logger)
         self.show_bottom_toolbar = c["main"].as_bool("show_bottom_toolbar")
 
@@ -1179,6 +1185,7 @@ class PGCli:
                 table_format=self.table_format,
                 dcmlfmt=self.decimal_format,
                 floatfmt=self.float_format,
+                column_date_formats=self.column_date_formats,
                 missingval=self.null_string,
                 expanded=expanded,
                 max_width=max_width,
@@ -1830,6 +1837,7 @@ def format_output(title, cur, headers, status, settings, explain_mode=False):
         "missing_value": settings.missingval,
         "integer_format": settings.dcmlfmt,
         "float_format": settings.floatfmt,
+        "column_date_formats": settings.column_date_formats,
         "preprocessors": (format_numbers, format_arrays),
         "disable_numparse": True,
         "preserve_whitespace": True,
@@ -1838,6 +1846,9 @@ def format_output(title, cur, headers, status, settings, explain_mode=False):
     }
     if not settings.floatfmt:
         output_kwargs["preprocessors"] = (align_decimals,)
+
+    if settings.column_date_formats:
+        output_kwargs["preprocessors"] += (format_timestamps,)
 
     if table_format == "csv":
         # The default CSV dialect is "excel" which is not handling newline values correctly

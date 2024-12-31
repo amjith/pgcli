@@ -240,3 +240,8 @@ output.null = "#808080"
 [data_formats]
 decimal = ""
 float = ""
+
+# Per column formats for date/timestamp columns
+[column_date_formats]
+# use strftime format, e.g.
+# created = "%Y-%m-%d"
