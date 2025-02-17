@@ -5,6 +5,7 @@ Features
 --------
 * Add a `--ping` command line option; allows pgcli to replace `pg_isready`
 * Changed the packaging metadata from setup.py to pyproject.toml
+* Add bash completion for services defined in the service file `~/.pg_service.conf`
 
 Bug fixes:
 ----------
