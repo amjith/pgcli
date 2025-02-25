@@ -49,6 +49,9 @@ def test_generate_alias_uses_first_char_and_every_preceded_by_underscore(
     "table_name, alias_map, alias",
     [
         ("some_table", {"some_table": "my_alias"}, "my_alias"),
+        pytest.param(
+            "some_other_table", {"some_table": "my_alias"}, "sot", id="no_match_in_map"
+        ),
     ],
 )
 def test_generate_alias_can_use_alias_map(table_name, alias_map, alias):
