@@ -63,10 +63,17 @@ normalize_ref = lambda ref: ref if ref[0] == '"' else '"' + ref.lower() + '"'
 
 
 def generate_alias(tbl, alias_map=None):
-    """Generate a table alias, consisting of all upper-case letters in
-    the table name, or, if there are no upper-case letters, the first letter +
-    all letters preceded by _
-    param tbl - unescaped name of the table to alias
+    """Generate a table alias.
+
+    Given a table name will return an alias for that table using the first of
+    the following options there's a match for.
+
+        1. The predefined alias for table defined in the alias_map.
+        2. All upper-case letters in the table name.
+        3. The first letter of the table name and all letters preceded by _
+
+    :param tbl: unescaped name of the table to alias
+    :param alias_map: optional mapping of predefined table aliases
     """
     if alias_map and tbl in alias_map:
         return alias_map[tbl]
@@ -528,7 +535,7 @@ class PGCompleter(Completer):
         scoped_cols = self.populate_scoped_cols(tables, suggestion.local_tables)
 
         def make_cand(name, ref):
-            synonyms = (name, generate_alias(self.case(name)))
+            synonyms = (name, generate_alias(self.case(name), alias_map=self.alias_map))
             return Candidate(qualify(name, ref), 0, "column", synonyms)
 
         def flat_cols():
@@ -601,7 +608,7 @@ class PGCompleter(Completer):
         tbl = self.case(tbl)
         tbls = {normalize_ref(t.ref) for t in tbls}
         if self.generate_aliases:
-            tbl = generate_alias(self.unescape_name(tbl))
+            tbl = generate_alias(self.unescape_name(tbl), alias_map=self.alias_map)
         if normalize_ref(tbl) not in tbls:
             return tbl
         elif tbl[0] == '"':
@@ -644,7 +651,7 @@ class PGCompleter(Completer):
                 join = "{0} ON {0}.{1} = {2}.{3}".format(
                     c(left.tbl), c(left.col), rtbl.ref, c(right.col)
                 )
-            alias = generate_alias(self.case(left.tbl))
+            alias = generate_alias(self.case(left.tbl), alias_map=self.alias_map)
             synonyms = [
                 join,
                 "{0} ON {0}.{1} = {2}.{3}".format(
@@ -845,7 +852,7 @@ class PGCompleter(Completer):
         cased_tbl = self.case(tbl.name)
         if do_alias:
             alias = self.alias(cased_tbl, suggestion.table_refs)
-        synonyms = (cased_tbl, generate_alias(cased_tbl))
+        synonyms = (cased_tbl, generate_alias(cased_tbl, alias_map=self.alias_map))
         maybe_alias = (" " + alias) if do_alias else ""
         maybe_schema = (self.case(tbl.schema) + ".") if tbl.schema else ""
         suffix = self._arg_list_cache[arg_mode][tbl.meta] if arg_mode else ""
