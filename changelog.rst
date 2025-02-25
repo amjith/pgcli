@@ -9,6 +9,7 @@ Features
 Bug fixes:
 ----------
 * Avoid raising `NameError` when exiting unsuccessfully in some cases
+* Use configured `alias_map_file` to generate table aliases if available.
 
 4.1.0 (2024-03-09)
 ==================

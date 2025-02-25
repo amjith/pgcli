@@ -55,7 +55,6 @@ def test_generate_alias_can_use_alias_map(table_name, alias_map, alias):
     assert pgcompleter.generate_alias(table_name, alias_map) == alias
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     "table_name, alias_map, alias",
     [
