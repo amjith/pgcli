@@ -63,10 +63,17 @@ normalize_ref = lambda ref: ref if ref[0] == '"' else '"' + ref.lower() + '"'
 
 
 def generate_alias(tbl, alias_map=None):
-    """Generate a table alias, consisting of all upper-case letters in
-    the table name, or, if there are no upper-case letters, the first letter +
-    all letters preceded by _
-    param tbl - unescaped name of the table to alias
+    """Generate a table alias.
+
+    Given a table name will return an alias for that table using the first of
+    the following options there's a match for.
+
+        1. The predefined alias for table defined in the alias_map.
+        2. All upper-case letters in the table name.
+        3. The first letter of the table name and all letters preceded by _
+
+    :param tbl: unescaped name of the table to alias
+    :param alias_map: optional mapping of predefined table aliases
     """
     if alias_map and tbl in alias_map:
         return alias_map[tbl]
